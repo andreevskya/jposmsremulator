@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE JposEntries PUBLIC "-//JavaPOS//DTD//EN" "jpos/res/jcl.dtd">
+<JposEntries>
+    <JposEntry logicalName="jpos-msr-emulator">
+        <creation
+                factoryClass="ru.andreevskya.jpos.msr.emulator.JposMsrEmulatorServiceInstanceFactory"
+                serviceClass="ru.andreevskya.jpos.msr.emulator.JposMsrEmulatorService" />
+        <vendor name="Andreevsky Artem" url="https://github.com/andreevskya" />
+        <jpos category="MSR" version="1.0" />
+        <product description="JavaPOS compatible magnetic strip reader emulator"
+                 name="MSR emulator service for JavaPOS(TM) Standard" url="http://www.javapos.com" />
+
+        <prop name="host" value="localhost" />
+        <prop name="port" value="1895"/>
+    </JposEntry>
+</JposEntries>

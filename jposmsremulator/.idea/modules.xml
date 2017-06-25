@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/jposmsremulator.iml" filepath="$PROJECT_DIR$/jposmsremulator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/msremulatorservice/msremulatorservice.iml" filepath="$PROJECT_DIR$/msremulatorservice/msremulatorservice.iml" />
+      <module fileurl="file://$PROJECT_DIR$/msremulatorserviceclient/msremulatorserviceclient.iml" filepath="$PROJECT_DIR$/msremulatorserviceclient/msremulatorserviceclient.iml" />
+    </modules>
+  </component>
+</project>
