@@ -1,29 +1,56 @@
 package ru.andreevskya.jpos.msr.emulator;
 
+import jpos.JposConst;
 import jpos.JposException;
 import jpos.loader.JposServiceInstance;
 import jpos.services.EventCallbacks;
-import jpos.services.MSRService12;
+import jpos.services.MSRService15;
 
 import static jpos.MSRConst.MSR_ERT_CARD;
 
-public class JposMsrEmulatorService implements MSRService12, JposServiceInstance {
+public class JposMsrEmulatorService implements MSRService15, JposServiceInstance {
     private int errorReportingType = MSR_ERT_CARD;
+    private boolean isOpened = false;
+    private boolean isClaimed = false;
+    private boolean isEnabled = false;
+    private boolean isAutodisable = false;
+
+    private EventCallbacks eventCallbacks;
 
     public JposMsrEmulatorService() {
 
     }
 
+    @Override
     public void deleteInstance() throws JposException {
 
     }
 
+    private void throwExceptionIfNotOpened() throws JposException {
+        if(!isOpened) {
+            throw new JposException(JposConst.JPOS_E_CLOSED, "Device is not opened.");
+        }
+    }
+
+    private void throwExceptionIfNotClaimed() throws JposException {
+        if(!isClaimed) {
+            throw new JposException(JposConst.JPOS_E_NOTCLAIMED, "Device not claimed.");
+        }
+    }
+
+    private void throwExceptionIfNotEnabled() throws JposException {
+        if(!isEnabled) {
+            throw new JposException(JposConst.JPOS_E_DISABLED, "Device is not enabled.");
+        }
+    }
     /**
      * Returns true if this device supports ISO cards.
      * @return always true.
-     * @throws JposException never.
+     * @throws JposException if device isn't opened.
      */
+    @Override
     public boolean getCapISO() throws JposException {
+        throwExceptionIfNotOpened();
         return true;
     }
 
@@ -32,49 +59,63 @@ public class JposMsrEmulatorService implements MSRService12, JposServiceInstance
      * JIS-I cards are a superset of ISO cards. Therefore, if CapJISOne is true, then it is
      * implied that CapISO is also true.
      * @return always true.
-     * @throws JposException never.
+     * @throws JposException if device is not opened.
      */
+    @Override
     public boolean getCapJISOne() throws JposException {
+        throwExceptionIfNotOpened();
         return true;
     }
 
     /**
      * Returns true if this device supports JIS Type-II cards.
      * @return always true.
-     * @throws JposException never.
+     * @throws JposException if device is not opened.
      */
+    @Override
     public boolean getCapJISTwo() throws JposException {
+        throwExceptionIfNotOpened();
         return true;
     }
 
+    @Override
     public String getAccountNumber() throws JposException {
         return null;
     }
 
+    @Override
     public boolean getAutoDisable() throws JposException {
-        return false;
+        throwExceptionIfNotOpened();
+        return isAutodisable;
     }
 
-    public void setAutoDisable(boolean b) throws JposException {
-
+    @Override
+    public void setAutoDisable(boolean value) throws JposException {
+        throwExceptionIfNotOpened();
+        this.isAutodisable = value;
     }
 
+    @Override
     public int getDataCount() throws JposException {
         return 0;
     }
 
+    @Override
     public boolean getDataEventEnabled() throws JposException {
         return false;
     }
 
+    @Override
     public void setDataEventEnabled(boolean b) throws JposException {
 
     }
 
+    @Override
     public boolean getDecodeData() throws JposException {
         return false;
     }
 
+    @Override
     public void setDecodeData(boolean b) throws JposException {
 
     }
@@ -109,9 +150,11 @@ public class JposMsrEmulatorService implements MSRService12, JposServiceInstance
      * properties to empty, and returns an error code indicating the status of each
      * track.
      * @return the type of errors to report via ErrorEvents.
-     * @throws JposException never.
+     * @throws JposException if device is not opened.
      */
+    @Override
     public int getErrorReportingType() throws JposException {
+        throwExceptionIfNotOpened();
         return this.errorReportingType;
     }
 
@@ -119,108 +162,142 @@ public class JposMsrEmulatorService implements MSRService12, JposServiceInstance
      * Sets the type of errors to report via ErrorEvents.
      * @see #getErrorReportingType()
      * @param reportingType the type of errors to report via ErrorEvents.
-     * @throws JposException never
+     * @throws JposException if device is not opened.
      */
+    @Override
     public void setErrorReportingType(int reportingType) throws JposException {
+        throwExceptionIfNotOpened();
         this.errorReportingType = reportingType;
     }
 
+    @Override
     public String getExpirationDate() throws JposException {
         return null;
     }
 
+    @Override
     public String getFirstName() throws JposException {
         return null;
     }
 
+    @Override
     public String getMiddleInitial() throws JposException {
         return null;
     }
 
+    @Override
     public boolean getParseDecodeData() throws JposException {
         return false;
     }
 
+    @Override
     public void setParseDecodeData(boolean b) throws JposException {
 
     }
 
+    @Override
     public String getServiceCode() throws JposException {
         return null;
     }
 
+    @Override
     public String getSuffix() throws JposException {
         return null;
     }
 
+    @Override
     public String getSurname() throws JposException {
         return null;
     }
 
+    @Override
     public String getTitle() throws JposException {
         return null;
     }
 
+    @Override
     public byte[] getTrack1Data() throws JposException {
         return new byte[0];
     }
 
+    @Override
     public byte[] getTrack1DiscretionaryData() throws JposException {
         return new byte[0];
     }
 
+    @Override
     public byte[] getTrack2Data() throws JposException {
         return new byte[0];
     }
 
+    @Override
     public byte[] getTrack2DiscretionaryData() throws JposException {
         return new byte[0];
     }
 
+    @Override
     public byte[] getTrack3Data() throws JposException {
         return new byte[0];
     }
 
+    @Override
     public int getTracksToRead() throws JposException {
         return 0;
     }
 
+    @Override
     public void setTracksToRead(int i) throws JposException {
 
     }
 
+    @Override
     public void clearInput() throws JposException {
-
+        throwExceptionIfNotOpened();
+        throwExceptionIfNotClaimed();
     }
 
+    @Override
     public String getCheckHealthText() throws JposException {
+        throwExceptionIfNotOpened();
         return "OK";
     }
 
+    @Override
     public boolean getClaimed() throws JposException {
-        return false;
+        throwExceptionIfNotOpened();
+        return isClaimed;
     }
 
+    @Override
     public boolean getDeviceEnabled() throws JposException {
-        return false;
+        throwExceptionIfNotOpened();
+        throwExceptionIfNotClaimed();
+        return isEnabled;
     }
 
-    public void setDeviceEnabled(boolean b) throws JposException {
-
+    @Override
+    public void setDeviceEnabled(boolean enabled) throws JposException {
+        throwExceptionIfNotOpened();
+        throwExceptionIfNotClaimed();
+        this.isEnabled = enabled;
     }
 
+    @Override
     public String getDeviceServiceDescription() throws JposException {
         return null;
     }
 
+    @Override
     public int getDeviceServiceVersion() throws JposException {
         return 0;
     }
 
+    @Override
     public boolean getFreezeEvents() throws JposException {
         return false;
     }
 
+    @Override
     public void setFreezeEvents(boolean b) throws JposException {
 
     }
@@ -228,53 +305,113 @@ public class JposMsrEmulatorService implements MSRService12, JposServiceInstance
     /**
      * Returns physical device description.
      * @return physical device description
-     * @throws JposException never.
+     * @throws JposException if device is not opened.
      */
+    @Override
     public String getPhysicalDeviceDescription() throws JposException {
+        throwExceptionIfNotOpened();
         return "JPOS-compatible magnetic strip reader emulator.";
     }
 
     /**
      * Returns physcal device name.
      * @return physical device name.
-     * @throws JposException never
+     * @throws JposException if device is not opened.
      */
+    @Override
     public String getPhysicalDeviceName() throws JposException {
+        throwExceptionIfNotOpened();
         // The length of this string should be limited to 30 characters.
         return "JPOS MSR Emulator";
     }
 
+    @Override
     public int getState() throws JposException {
         return 0;
     }
 
+    @Override
     public void claim(int i) throws JposException {
-
+        throwExceptionIfNotOpened();
     }
 
+    @Override
     public void close() throws JposException {
-
+        throwExceptionIfNotOpened();
+        isOpened = false;
     }
 
     /**
      * Performs health-check on the device.
      * This method is not implemented.
-     * @param level health-check level. Shoul
-     * @throws JposException never
+     * @param level health-check level.
+     * @throws JposException if device is not opened.
      */
+    @Override
     public void checkHealth(int level) throws JposException {
-        // Not implemented.
+        throwExceptionIfNotOpened();
+        throwExceptionIfNotClaimed();
+        throwExceptionIfNotEnabled();
     }
 
+    @Override
     public void directIO(int i, int[] ints, Object o) throws JposException {
 
     }
 
+    @Override
     public void open(String s, EventCallbacks eventCallbacks) throws JposException {
+        isOpened = true;
+        this.eventCallbacks = eventCallbacks;
+    }
+
+    @Override
+    public void release() throws JposException {
+        throwExceptionIfNotClaimed();
+        throwExceptionIfNotOpened();
+    }
+
+    @Override
+    public boolean getCapTransmitSentinels() throws JposException {
+        return false;
+    }
+
+    @Override
+    public byte[] getTrack4Data() throws JposException {
+        return new byte[0];
+    }
+
+    @Override
+    public boolean getTransmitSentinels() throws JposException {
+        return false;
+    }
+
+    @Override
+    public void setTransmitSentinels(boolean b) throws JposException {
 
     }
 
-    public void release() throws JposException {
+    @Override
+    public int getCapPowerReporting() throws JposException {
+        return 0;
+    }
 
+    @Override
+    public int getPowerNotify() throws JposException {
+        return 0;
+    }
+
+    @Override
+    public void setPowerNotify(int i) throws JposException {
+
+    }
+
+    @Override
+    public int getPowerState() throws JposException {
+        return 0;
+    }
+
+    EventCallbacks getEventCallbacks() {
+        return this.eventCallbacks;
     }
 }
