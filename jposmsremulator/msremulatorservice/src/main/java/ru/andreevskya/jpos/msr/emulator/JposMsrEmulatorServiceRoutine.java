@@ -53,6 +53,6 @@ public class JposMsrEmulatorServiceRoutine {
         int[] trackLengths = new int[4];
         List<byte[]> tracks = new ArrayList<>(4);
         numTracks = client.getInputStream().read();
-        
+
     }
 }
