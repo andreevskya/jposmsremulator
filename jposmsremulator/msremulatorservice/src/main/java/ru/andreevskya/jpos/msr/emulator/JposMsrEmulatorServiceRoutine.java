@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JposMsrEmulatorServiceRoutine {
     private JposMsrEmulatorService service;
@@ -46,7 +48,11 @@ public class JposMsrEmulatorServiceRoutine {
         socketListenerThread = null;
     }
 
-    private void doClientSocketRoutine(Socket client) {
-
+    private void doClientSocketRoutine(Socket client) throws IOException {
+        int numTracks;
+        int[] trackLengths = new int[4];
+        List<byte[]> tracks = new ArrayList<>(4);
+        numTracks = client.getInputStream().read();
+        
     }
 }

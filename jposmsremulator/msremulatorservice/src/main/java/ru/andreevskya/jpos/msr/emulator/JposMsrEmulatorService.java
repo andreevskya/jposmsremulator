@@ -2,6 +2,7 @@ package ru.andreevskya.jpos.msr.emulator;
 
 import jpos.JposConst;
 import jpos.JposException;
+import jpos.MSRConst;
 import jpos.loader.JposServiceInstance;
 import jpos.services.EventCallbacks;
 import jpos.services.MSRService15;
@@ -14,7 +15,17 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
     private boolean isClaimed = false;
     private boolean isEnabled = false;
     private boolean isAutodisable = false;
+    private boolean isDataEventEnabled = false;
+    private boolean isDecodeData = true;
+    private boolean isFreezeEvents = false;
 
+    private byte[] track1Data = new byte[0];
+    private byte[] track2Data = new byte[0];
+    private byte[] track3Data = new byte[0];
+    private byte[] track4Data = new byte[0];
+    private int numTracksToRead = MSRConst.MSR_TR_1_2_3;
+    private int numPendingEvents = 0;
+    private int deviceState = JposConst.JPOS_S_CLOSED;
     private EventCallbacks eventCallbacks;
 
     public JposMsrEmulatorService() {
@@ -26,23 +37,6 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
 
     }
 
-    private void throwExceptionIfNotOpened() throws JposException {
-        if(!isOpened) {
-            throw new JposException(JposConst.JPOS_E_CLOSED, "Device is not opened.");
-        }
-    }
-
-    private void throwExceptionIfNotClaimed() throws JposException {
-        if(!isClaimed) {
-            throw new JposException(JposConst.JPOS_E_NOTCLAIMED, "Device not claimed.");
-        }
-    }
-
-    private void throwExceptionIfNotEnabled() throws JposException {
-        if(!isEnabled) {
-            throw new JposException(JposConst.JPOS_E_DISABLED, "Device is not enabled.");
-        }
-    }
     /**
      * Returns true if this device supports ISO cards.
      * @return always true.
@@ -80,7 +74,8 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
 
     @Override
     public String getAccountNumber() throws JposException {
-        return null;
+        throwExceptionIfNotOpened();
+        return "";
     }
 
     @Override
@@ -95,29 +90,39 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
         this.isAutodisable = value;
     }
 
+    /**
+     * Returns the number of queued events.
+     * @return number of queued events.
+     * @throws JposException if device is not opened by calling {@link #open(String, EventCallbacks)} method.
+     */
     @Override
     public int getDataCount() throws JposException {
-        return 0;
+        throwExceptionIfNotOpened();
+        return this.numPendingEvents;
     }
 
     @Override
     public boolean getDataEventEnabled() throws JposException {
-        return false;
+        throwExceptionIfNotOpened();
+        return isDataEventEnabled;
     }
 
     @Override
-    public void setDataEventEnabled(boolean b) throws JposException {
-
+    public void setDataEventEnabled(boolean enabled) throws JposException {
+        throwExceptionIfNotOpened();
+        this.isDataEventEnabled = enabled;
     }
 
     @Override
     public boolean getDecodeData() throws JposException {
-        return false;
+        throwExceptionIfNotOpened();
+        return this.isDecodeData;
     }
 
     @Override
-    public void setDecodeData(boolean b) throws JposException {
-
+    public void setDecodeData(boolean value) throws JposException {
+        throwExceptionIfNotOpened();
+        this.isDecodeData = value;
     }
 
     /**
@@ -172,17 +177,17 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
 
     @Override
     public String getExpirationDate() throws JposException {
-        return null;
+        return "";
     }
 
     @Override
     public String getFirstName() throws JposException {
-        return null;
+        return "";
     }
 
     @Override
     public String getMiddleInitial() throws JposException {
-        return null;
+        return "";
     }
 
     @Override
@@ -192,32 +197,36 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
 
     @Override
     public void setParseDecodeData(boolean b) throws JposException {
-
+        throw new JposException(
+                JposConst.JPOS_E_ILLEGAL,
+                "This function is not implemented.",
+                new UnsupportedOperationException("Not implemented")
+        );
     }
 
     @Override
     public String getServiceCode() throws JposException {
-        return null;
+        return "";
     }
 
     @Override
     public String getSuffix() throws JposException {
-        return null;
+        return "";
     }
 
     @Override
     public String getSurname() throws JposException {
-        return null;
+        return "";
     }
 
     @Override
     public String getTitle() throws JposException {
-        return null;
+        return "";
     }
 
     @Override
     public byte[] getTrack1Data() throws JposException {
-        return new byte[0];
+        return this.track1Data;
     }
 
     @Override
@@ -227,7 +236,7 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
 
     @Override
     public byte[] getTrack2Data() throws JposException {
-        return new byte[0];
+        return this.track2Data;
     }
 
     @Override
@@ -237,17 +246,41 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
 
     @Override
     public byte[] getTrack3Data() throws JposException {
-        return new byte[0];
+        return this.track3Data;
     }
 
     @Override
     public int getTracksToRead() throws JposException {
-        return 0;
+        return this.numTracksToRead;
     }
 
     @Override
-    public void setTracksToRead(int i) throws JposException {
-
+    public void setTracksToRead(int tracks) throws JposException {
+        switch (tracks) {
+            case MSRConst.MSR_TR_1:
+            case MSRConst.MSR_TR_2:
+            case MSRConst.MSR_TR_3:
+            case MSRConst.MSR_TR_4:
+            case MSRConst.MSR_TR_1_2:
+            case MSRConst.MSR_TR_1_3:
+            case MSRConst.MSR_TR_1_4:
+            case MSRConst.MSR_TR_2_3:
+            case MSRConst.MSR_TR_2_4:
+            case MSRConst.MSR_TR_3_4:
+            case MSRConst.MSR_TR_1_2_3:
+            case MSRConst.MSR_TR_1_2_3_4:
+            case MSRConst.MSR_TR_1_2_4:
+            case MSRConst.MSR_TR_1_3_4:
+            case MSRConst.MSR_TR_2_3_4:
+            case MSRConst.MSR_TR_NONE:
+                this.numTracksToRead = tracks;
+                break;
+            default:
+                throw new JposException(
+                        JposConst.JPOS_E_ILLEGAL,
+                        "Unknown number of tracks to read. Number of tracks should be one from contant MSRConst.MSR_TR_xxx"
+                );
+        }
     }
 
     @Override
@@ -284,22 +317,22 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
 
     @Override
     public String getDeviceServiceDescription() throws JposException {
-        return null;
+        return "JPOS-compatible magnetic strip reader emulator.";;
     }
 
     @Override
     public int getDeviceServiceVersion() throws JposException {
-        return 0;
+        return 1000;
     }
 
     @Override
     public boolean getFreezeEvents() throws JposException {
-        return false;
+        return this.isFreezeEvents;
     }
 
     @Override
-    public void setFreezeEvents(boolean b) throws JposException {
-
+    public void setFreezeEvents(boolean doFreeze) throws JposException {
+        this.isFreezeEvents = doFreeze;
     }
 
     /**
@@ -327,18 +360,20 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
 
     @Override
     public int getState() throws JposException {
-        return 0;
+        return this.deviceState;
     }
 
     @Override
-    public void claim(int i) throws JposException {
+    public void claim(int timeout) throws JposException {
         throwExceptionIfNotOpened();
+        this.isClaimed = true;
     }
 
     @Override
     public void close() throws JposException {
         throwExceptionIfNotOpened();
         isOpened = false;
+        this.deviceState = JposConst.JPOS_S_CLOSED;
     }
 
     /**
@@ -356,13 +391,15 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
 
     @Override
     public void directIO(int i, int[] ints, Object o) throws JposException {
-
+        throw new JposException(JposConst.JPOS_E_ILLEGAL, "This method is not implemented by the emulator",
+                new UnsupportedOperationException("Not implemented"));
     }
 
     @Override
     public void open(String s, EventCallbacks eventCallbacks) throws JposException {
         isOpened = true;
         this.eventCallbacks = eventCallbacks;
+        this.deviceState = JposConst.JPOS_S_IDLE;
     }
 
     @Override
@@ -378,7 +415,7 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
 
     @Override
     public byte[] getTrack4Data() throws JposException {
-        return new byte[0];
+        return this.track4Data;
     }
 
     @Override
@@ -413,5 +450,23 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
 
     EventCallbacks getEventCallbacks() {
         return this.eventCallbacks;
+    }
+
+    private void throwExceptionIfNotOpened() throws JposException {
+        if(!isOpened) {
+            throw new JposException(JposConst.JPOS_E_CLOSED, "Device is not opened.");
+        }
+    }
+
+    private void throwExceptionIfNotClaimed() throws JposException {
+        if(!isClaimed) {
+            throw new JposException(JposConst.JPOS_E_NOTCLAIMED, "Device not claimed.");
+        }
+    }
+
+    private void throwExceptionIfNotEnabled() throws JposException {
+        if(!isEnabled) {
+            throw new JposException(JposConst.JPOS_E_DISABLED, "Device is not enabled.");
+        }
     }
 }
