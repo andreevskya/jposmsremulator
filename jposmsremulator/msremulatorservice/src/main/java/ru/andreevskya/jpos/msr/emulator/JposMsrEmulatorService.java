@@ -317,7 +317,7 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
 
     @Override
     public String getDeviceServiceDescription() throws JposException {
-        return "JPOS-compatible magnetic strip reader emulator.";;
+        return "JPOS-compatible magnetic strip reader emulator.";
     }
 
     @Override

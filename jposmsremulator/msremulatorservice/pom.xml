@@ -17,6 +17,10 @@
             <artifactId>xerces</artifactId>
             <version>2.4.0</version>
         </dependency>
+        <dependency>
+            <groupId>javapos</groupId>
+            <artifactId>jpos</artifactId>
+            <version>1.13</version>
+        </dependency>
     </dependencies>
-
 </project>
