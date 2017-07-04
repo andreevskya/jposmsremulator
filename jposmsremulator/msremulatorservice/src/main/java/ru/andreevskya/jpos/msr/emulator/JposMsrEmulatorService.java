@@ -197,11 +197,7 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
 
     @Override
     public void setParseDecodeData(boolean b) throws JposException {
-        throw new JposException(
-                JposConst.JPOS_E_ILLEGAL,
-                "This function is not implemented.",
-                new UnsupportedOperationException("Not implemented")
-        );
+        throwNotImplemented();
     }
 
     @Override
@@ -391,8 +387,7 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
 
     @Override
     public void directIO(int i, int[] ints, Object o) throws JposException {
-        throw new JposException(JposConst.JPOS_E_ILLEGAL, "This method is not implemented by the emulator",
-                new UnsupportedOperationException("Not implemented"));
+        throwNotImplemented();
     }
 
     @Override
@@ -425,7 +420,7 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
 
     @Override
     public void setTransmitSentinels(boolean b) throws JposException {
-
+        throwNotImplemented();
     }
 
     @Override
@@ -440,7 +435,7 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
 
     @Override
     public void setPowerNotify(int i) throws JposException {
-
+        throwNotImplemented();
     }
 
     @Override
@@ -468,5 +463,10 @@ public class JposMsrEmulatorService implements MSRService15, JposServiceInstance
         if(!isEnabled) {
             throw new JposException(JposConst.JPOS_E_DISABLED, "Device is not enabled.");
         }
+    }
+
+    private void throwNotImplemented() throws JposException {
+        throw new JposException(JposConst.JPOS_E_ILLEGAL, "This method is not implemented by the emulator",
+                new UnsupportedOperationException("Not implemented"));
     }
 }
